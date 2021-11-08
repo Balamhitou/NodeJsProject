@@ -62,16 +62,26 @@ app.get('/user/me', authentificate,(req,res)=>{
 });
 
 
-// app.post('/user', (req, res) => {
-//   var body = _.pick(req.body,['email',' password']);
-//   var user = new User(body);
-//   user.save().then((user)=>{
-//       escape.send(user);
-//   })
-//     .catch((e)=>{
-//           res.status(400).send(e);
-//       })
-//   })
+app.post('/user/login', (req,res)=>{
+   var body =_.pick(req.body,['email','password']);
+   console.log(req.body.email + ' ' + req.body.password)
+   User.findByCredentials(body.email,body.password).then((user)=>{
+    return user.generateAuthToken().then((token)=>{
+      res.header('x-auth',token).send(user);
+    });
+   }).catch((err)=>{
+  res.status(400).send();
+   });
+});
+
+app.delete('/user/me/token',authentificate, (req,res)=>{
+   req.user.removeToken(req.token).then(()=>{
+     res.status(200).send();
+   },()=>{
+     res.status(400).send();
+   })
+});
+
 app.listen(3000,()=>{
   console.log('started on port 3000');
 })
